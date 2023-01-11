@@ -8,6 +8,7 @@
 import UIKit
 import SnapKit
 import RxSwift
+import RxCocoa
 
 final class MainViewController: UIViewController {
     
@@ -22,7 +23,16 @@ final class MainViewController: UIViewController {
     }()
     
     // searchController
-    private let searchController = UISearchController(searchResultsController: SearchCityResultsController())
+    private let searchController = UISearchController(searchResultsController: nil)
+    
+    private lazy var searchBar: UIView = {
+        let view = UIView()
+        let viewTap = UITapGestureRecognizer(target: self, action: #selector(handleSearchBarTapped))
+        view.isUserInteractionEnabled = true
+        view.addGestureRecognizer(viewTap)
+        view.backgroundColor = .red
+        return view
+    }()
     
     // 현재 위치 날씨 View
     private let currentLocationWeatherView = CurrentLocationWeatherView()
@@ -32,9 +42,17 @@ final class MainViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-    
         configureScrollView()
-        configureSearchController()
+    }
+    
+    override func viewWillAppear(_ animated: Bool) {
+        super.viewWillAppear(animated)
+        navigationController?.isNavigationBarHidden = true
+    }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        navigationController?.isNavigationBarHidden = false
     }
     
     // MARK: - Helpers
@@ -47,10 +65,25 @@ final class MainViewController: UIViewController {
             $0.edges.equalTo(view)
         }
         
+        scrollView.addSubview(searchBar)
+        searchBar.snp.makeConstraints {
+            $0.top.left.right.equalTo(view.safeAreaLayoutGuide)
+            $0.height.equalTo(50)
+        }
+        
         scrollView.addSubview(currentLocationWeatherView)
         currentLocationWeatherView.snp.makeConstraints {
+            $0.top.equalTo(searchBar.snp.bottom).offset(50)
             $0.centerX.equalTo(scrollView)
         }
+    }
+    
+    // MARK: - Selectors
+    
+    @objc func handleSearchBarTapped() {
+        let controller = SearchBarController()
+        
+        self.navigationController?.pushViewController(controller, animated: true)
     }
     
     
@@ -74,6 +107,11 @@ extension MainViewController: UISearchResultsUpdating {
     
     /// updateSearchResults
     func updateSearchResults(for searchController: UISearchController) {
-        dump(searchController.searchBar.text)
+        let controller = UINavigationController(rootViewController: SearchCityResultsController())
+        controller.modalPresentationStyle = .fullScreen
+        
+        present(controller, animated: true)
     }
+    
+    
 }

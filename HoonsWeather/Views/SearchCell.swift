@@ -36,7 +36,8 @@ final class SearchCell: UITableViewCell {
     // MARK: - Helpers
     
     private func configureUI() {
-        self.backgroundColor = #colorLiteral(red: 0.4146796465, green: 0.5725354552, blue: 0.7671923041, alpha: 1)
+//        self.backgroundColor = #colorLiteral(red: 0.4146796465, green: 0.5725354552, blue: 0.7671923041, alpha: 1)
+        self.backgroundColor = .clear
         self.selectionStyle = .none
         
         let stack = UIStackView(arrangedSubviews: [cityName, countryName])
