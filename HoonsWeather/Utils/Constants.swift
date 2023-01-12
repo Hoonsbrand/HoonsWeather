@@ -10,6 +10,10 @@ import Foundation
 enum API {
     // api key 은닉화
     static let CLIENT_ID: String = Bundle.main.OPENWEATHER_API_KEY
+    
+    static func getURL(lat: Double, lon: Double) -> String {
+        return "https://api.openweathermap.org/data/2.5/forecast?lat=\(lat)&lon=\(lon)&lang=kr&appid=\(API.CLIENT_ID)&units=metric"
+    }
 }
 
 extension Bundle {
@@ -26,3 +30,6 @@ extension Bundle {
         return key
     }
 }
+
+//https://api.openweathermap.org/data/2.5/forecast?q=Gorkhā&appid=5b1ea9cdb850fd6e64033474744e8eb7&units=metric
+//https://api.openweathermap.org/data/2.5/forecast?q=Gorkhā&appid=5b1ea9cdb850fd6e64033474744e8eb7&units=metric

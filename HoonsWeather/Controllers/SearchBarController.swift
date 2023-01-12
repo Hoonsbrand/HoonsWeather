@@ -9,9 +9,17 @@ import UIKit
 import RxCocoa
 import RxSwift
 
-class SearchBarController: UIViewController {
+// MARK: - SendDataDelegate
+/// 데이터를 주고받기 위한 프로토콜 메서드
+protocol SendDataDelegate {
+    func recieveData(weatherData: WeatherData)
+}
+
+final class SearchBarController: UIViewController, UISearchBarDelegate {
     
     // MARK: - Properties
+    
+    var delegate: SendDataDelegate?
     
     // 도시 목록을 받아올 변수
     var allCityList: CityList? {
@@ -20,6 +28,7 @@ class SearchBarController: UIViewController {
         }
     }
     
+    // TableView에 동적으로 보여지는 도시 목록
     var shownCityList = CityList()
     
     // dispose: 메모리의 효율성을 위해 구독을 취소하는 메서드
@@ -41,12 +50,14 @@ class SearchBarController: UIViewController {
         searchBar.barTintColor = #colorLiteral(red: 0.592104733, green: 0.7015268207, blue: 0.8401067257, alpha: 1)
         return searchBar
     }()
-    
+
     // MARK: - Lifecycle
     
     override func viewDidLoad() {
         super.viewDidLoad()
         navigationItem.titleView = searchBar
+        navigationController?.navigationBar.tintColor = .white
+        navigationController?.navigationBar.topItem?.backButtonTitle = "취소"
         searchBar.delegate = self
         fetchCityList()
         configureTableView()
@@ -75,7 +86,6 @@ class SearchBarController: UIViewController {
         }
     }
 }
-    
 
 // MARK: - UITableView Delegate & DataSource
 
@@ -92,12 +102,23 @@ extension SearchBarController: UITableViewDelegate, UITableViewDataSource {
     
         return cell
     }
-}
-
-extension SearchBarController: UISearchBarDelegate {
     
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        // json파일의 도시 coord에 접근해 위도와 경도를 받아 변수에 할당
+        let lat = shownCityList[indexPath.row].coord.lat
+        let lon = shownCityList[indexPath.row].coord.lon
+        
+        // Alamofire를 위도와 경도를 이용해 호출하여 해당 지역의 날씨 전체 정보를 받아옴
+        AlamofireManger.shared.fetchCurrentTempWithLatAndLon(inputLat: lat, inputLon: lon) { weather in
+            // 받은 날씨 정보를 프로토콜 메서드를 통해 넘겨줌
+            self.delegate?.recieveData(weatherData: weather)
+        }
+        
+        self.navigationController?.popViewController(animated: true)
+    }
 }
 
+// MARK: - RxSwift를 이용한 SearchBar와 TableView간 소통
 extension SearchBarController {
     private func input() {
         searchBar

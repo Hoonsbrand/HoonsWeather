@@ -7,36 +7,37 @@
 
 import UIKit
 import SnapKit
+import Alamofire
 
-final class CurrentLocationWeatherView: UIView {
+final class SelectedWeatherView: UIView {
     
     // MARK: - Properties
     
     // 도시 label
     lazy var cityLabel: UILabel = {
-        return self.makeLabel(fontSize: 35, text: "Seoul")
+        return self.makeLabel(fontSize: 40, text: "")
     }()
     
     // 온도 label
     lazy var temperatureLabel: UILabel = {
-        return self.makeLabel(fontSize: 70, text: "-7º")
+        return self.makeLabel(fontSize: 70, text: "")
     }()
     
     // 날씨 label
     lazy var weatherDescribeLabel: UILabel = {
-        return self.makeLabel(fontSize: 30, text: "맑음")
+        return self.makeLabel(fontSize: 30, text: "")
     }()
     
     // 최고, 최저기온 label
     lazy var maximumMinimumTempLabel: UILabel = {
-        return self.makeLabel(fontSize: 25, text: "최고: -1º | 최저: -11º")
+        return self.makeLabel(fontSize: 25, text: "")
     }()
     
     // MARK: - Lifecycle
     
     override init(frame: CGRect) {
         super.init(frame: frame)
-        configureUI()
+        setStackView()
     }
     
     required init?(coder: NSCoder) {
@@ -45,7 +46,7 @@ final class CurrentLocationWeatherView: UIView {
     
     // MARK: - Helpers
     
-    // label 만드는 메서드
+    /// label 만드는 메서드
     private func makeLabel(fontSize: CGFloat, text: String) -> UILabel {
         let label = UILabel()
         label.font = UIFont.systemFont(ofSize: fontSize)
@@ -54,8 +55,8 @@ final class CurrentLocationWeatherView: UIView {
         return label
     }
     
-    // UI 초기화
-    private func configureUI() {
+    /// StackView 세팅
+    private func setStackView() {
         self.backgroundColor = .clear
         let tempStack = UIStackView(arrangedSubviews: [weatherDescribeLabel, maximumMinimumTempLabel])
         tempStack.axis = .vertical
