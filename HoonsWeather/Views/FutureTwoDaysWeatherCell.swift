@@ -8,14 +8,14 @@
 import UIKit
 import SnapKit
 
-class FutureTwoDaysWeatherCell: UICollectionViewCell {
+final class FutureTwoDaysWeatherCell: UICollectionViewCell {
     
     // MARK: - Properties
     
     var timeLabel: UILabel = {
         let label = UILabel()
         label.text = "지금"
-        label.font = .systemFont(ofSize: 18)
+        label.font = .systemFont(ofSize: 10)
         label.textAlignment = .center
         label.textColor = .white
         return label
@@ -24,6 +24,7 @@ class FutureTwoDaysWeatherCell: UICollectionViewCell {
     var weatherImage: UIImageView = {
         let iv = UIImageView()
         iv.image = UIImage(named: "01d")
+        iv.contentMode = .scaleAspectFit
         return iv
     }()
     
@@ -45,6 +46,7 @@ class FutureTwoDaysWeatherCell: UICollectionViewCell {
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
+
     
     // MARK: - Helpers
     

@@ -19,6 +19,7 @@ struct AlamofireManger {
         if inputLon == nil { lon = 127.004173 } else { lon = inputLon! }
 
         let url = API.getURL(lat: lat!, lon: lon!)
+        
         let request = AF.request(url)
         request.validate().responseDecodable(of: WeatherData.self) { response in
             switch response.result {

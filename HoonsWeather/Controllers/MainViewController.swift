@@ -21,6 +21,8 @@ final class MainViewController: UIViewController {
         }
     }
     
+    var weather: WeatherData?
+    
     // 전체 뷰를 관장할 scrollView
     private let scrollView: UIScrollView = {
         let scrollView = UIScrollView()
@@ -28,7 +30,7 @@ final class MainViewController: UIViewController {
         scrollView.showsVerticalScrollIndicator = false
         return scrollView
     }()
-        
+    
     // 도시 검색 화면으로 넘어갈 Button
     private lazy var searchBar: UIButton = {
         let button = UIButton(type: .system)
@@ -45,6 +47,7 @@ final class MainViewController: UIViewController {
         flowlayout.scrollDirection = .horizontal
         let cv = UICollectionView(frame: .zero, collectionViewLayout: flowlayout)
         cv.register(FutureTwoDaysWeatherCell.self, forCellWithReuseIdentifier: FutureTwoDaysWeatherCell.reuseIdentifier)
+        cv.snp.makeConstraints { $0.height.equalTo(100) }
         cv.backgroundColor = .clear
         cv.showsHorizontalScrollIndicator = false
         return cv
@@ -53,7 +56,7 @@ final class MainViewController: UIViewController {
     // 최대 풍속을 알려주는 label
     private let maxWindSpeedLabel: UILabel = {
         let label = UILabel()
-        label.font = .systemFont(ofSize: 18)
+        label.font = .systemFont(ofSize: 12)
         label.textColor = .white
         return label
     }()
@@ -61,7 +64,7 @@ final class MainViewController: UIViewController {
     // threeHourWeatherCollectionView와 maxWindSpeedLabel 사이의 구분선
     private let divider: UIView = {
         let view = UIView()
-        view.backgroundColor = .systemGroupedBackground
+        view.backgroundColor = #colorLiteral(red: 0.4353573918, green: 0.5798597336, blue: 0.7632742524, alpha: 1)
         view.snp.makeConstraints {
             $0.height.equalTo(1.0)
         }
@@ -78,7 +81,6 @@ final class MainViewController: UIViewController {
     
     // 최상단에 위치하는 현재 위치 날씨 View
     private let currentLocationWeatherView = SelectedWeatherView()
-  
     
     // MARK: - Lifecycle
     
@@ -101,7 +103,7 @@ final class MainViewController: UIViewController {
     
     /// ScrollView UI 설정
     private func configureScrollView() {
-        
+        scrollView.isScrollEnabled = true
         setCurrentWeatherView()
         
         view.addSubview(scrollView)
@@ -110,19 +112,27 @@ final class MainViewController: UIViewController {
             $0.edges.equalTo(view)
         }
         
+        configureSearchBar()
+        configureCurrentLocationWeatherView()
+        configureThreeHourCollectionView()
+    }
+    
+    /// SearchBar UI 세팅
+    private func configureSearchBar() {
         scrollView.addSubview(searchBar)
         searchBar.snp.makeConstraints {
             $0.top.left.right.equalTo(view.safeAreaLayoutGuide)
             $0.height.equalTo(50)
         }
-        
+    }
+    
+    /// currentLocationWeatherView UI 세팅
+    private func configureCurrentLocationWeatherView() {
         scrollView.addSubview(currentLocationWeatherView)
         currentLocationWeatherView.snp.makeConstraints {
-            $0.top.equalTo(searchBar.snp.bottom).offset(50)
+            $0.top.equalTo(searchBar.snp.bottom).offset(5)
             $0.centerX.equalTo(scrollView)
         }
-        
-        configureThreeHourCollectionView()
     }
     
     /// CollectionView UI 세팅
@@ -132,7 +142,7 @@ final class MainViewController: UIViewController {
         
         let stack = UIStackView(arrangedSubviews: [maxWindSpeedLabel, divider, threeHourWeatherCollectionView])
         stack.axis = .vertical
-        stack.spacing = 2
+        stack.spacing = 8
         stack.distribution = .fill
         
         scrollView.addSubview(containerView)
@@ -146,20 +156,18 @@ final class MainViewController: UIViewController {
         containerView.snp.makeConstraints {
             $0.top.equalTo(currentLocationWeatherView.snp.bottom).offset(50)
             $0.width.equalTo(scrollView).offset(-50)
-            $0.height.equalTo(200)
+            $0.height.equalTo(150)
             $0.centerX.equalTo(scrollView)
         }
     }
     
     /// 최근 날씨 View 설정
-    private func setCurrentWeatherView(inputLat: Double? = nil, inputLon: Double? = nil) {
+    private func setCurrentWeatherView() {
         AlamofireManger.shared.fetchCurrentTempWithLatAndLon() { weather in
             let viewModel = SelectedWeatherViewModel(weatherData: weather)
             // 날씨 데이터를 받아올 때 멤버변수 viewModel에 할당을 해줌으로써 다른곳에서도 사용이 가능케함
             self.viewModel = viewModel
-            
             self.setCurrentWeatherLabelWithViewModel(viewModel: viewModel)
-            print(viewModel.conditionName)
         }
     }
     
@@ -201,17 +209,16 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
         guard let viewModel = viewModel else { return 0 }
         return viewModel.threeHourTemp.count
     }
-
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: FutureTwoDaysWeatherCell.reuseIdentifier, for: indexPath) as! FutureTwoDaysWeatherCell
         guard let viewModel = viewModel else { return cell }
         
-        cell.tempLabel.text = viewModel.threeHourTemp[indexPath.row]
-        cell.weatherImage.image = UIImage(named: viewModel.conditionName[indexPath.row])
-        
-        /// TODO: 시간 계산해서 한국시간으로 3시간 간격으로 보여줘야함
         cell.timeLabel.text = viewModel.weatherTime[indexPath.row]
         
+        cell.tempLabel.text = viewModel.threeHourTemp[indexPath.row]
+        cell.weatherImage.image = UIImage(named: viewModel.conditionName[indexPath.row])
+
         return cell
     }
 }
@@ -221,10 +228,11 @@ extension MainViewController: UICollectionViewDelegate, UICollectionViewDataSour
 extension MainViewController: UICollectionViewDelegateFlowLayout {
     func collectionView(_ collectionView: UICollectionView, layout collectionViewLayout: UICollectionViewLayout, sizeForItemAt indexPath: IndexPath) -> CGSize {
         guard let flowLayout = collectionViewLayout as? UICollectionViewFlowLayout else { return CGSize() }
-
-        let itemSize = CGSize(width: 50, height: 100)
-
+        
+        let itemSize = CGSize(width: 45, height: 100)
+        
         return itemSize
+        //        return CGSize(width: 80, height: threeHourWeatherCollectionView.frame.height)
     }
 }
 

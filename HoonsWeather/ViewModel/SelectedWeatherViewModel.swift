@@ -18,7 +18,7 @@ struct SelectedWeatherViewModel {
 
     // 현재온도
     var temperature: String {
-        return "\(weatherData.list[0].main.temp)º"
+        return "\(Int(weatherData.list[0].main.temp))º"
     }
 
     // 현재날씨 설명
@@ -32,13 +32,13 @@ struct SelectedWeatherViewModel {
     }
     
     // 최고온도
-    private var maximumTemp: Double {
-        return weatherData.list[0].main.tempMax
+    private var maximumTemp: Int {
+        return Int(weatherData.list[0].main.tempMax)
     }
 
     // 최저온도
-    private var minimumTemp: Double {
-        return weatherData.list[0].main.tempMin
+    private var minimumTemp: Int {
+        return Int(weatherData.list[0].main.tempMin)
     }
     
     // 최대풍속
@@ -50,7 +50,9 @@ struct SelectedWeatherViewModel {
     var threeHourTemp: [String] {
         var tempArr = [String]()
         weatherData.list.forEach {
-            tempArr.append(String("\($0.main.temp)º"))
+            if TimeService.shared.getOnlyNowAndFuture(dateString: ($0.dtTxt.toDate()?.toString())!) {
+                tempArr.append(String("\(Int($0.main.temp))º"))
+            }
         }
 
         return tempArr
@@ -62,8 +64,10 @@ struct SelectedWeatherViewModel {
         var conditionStringResultArr = [String]()
         
         weatherData.list.forEach {
-            $0.weather.forEach {
-                conditionIntArr.append($0.id)
+            if TimeService.shared.getOnlyNowAndFuture(dateString: ($0.dtTxt.toDate()?.toString())!) {
+                $0.weather.forEach {
+                    conditionIntArr.append($0.id)
+                }
             }
         }
         
@@ -89,16 +93,17 @@ struct SelectedWeatherViewModel {
         }
         return conditionStringResultArr
     }
-    
-    // 3시간 간격 시간
+
     /// TODO: 시간 계산해서 한국시간으로 3시간 간격으로 보여줘야함
     var weatherTime: [String] {
         var timeArr = [String]()
         
         weatherData.list.forEach {
-            timeArr.append($0.dtTxt)
+            if TimeService.shared.getOnlyNowAndFuture(dateString: ($0.dtTxt.toDate()?.toString())!) {
+                let convertStr = TimeService.shared.getKoreaTime(date: $0.dtTxt.toDate()!)
+                timeArr.append(convertStr)
+            }
         }
-        
         return timeArr
     }
 

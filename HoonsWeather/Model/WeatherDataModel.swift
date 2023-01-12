@@ -13,7 +13,7 @@ import Foundation
 struct WeatherData: Codable {
     let cod: String
     let message, cnt: Int
-    let list: [List]
+    var list: [List]
     let city: City
 }
 
